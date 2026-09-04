@@ -51,8 +51,8 @@ $('requestAccessButton').addEventListener('click',async()=>{const endpoint=confi
 $('clearButton').addEventListener('click',()=>{if(confirm('Effacer les séances conservées sur cet appareil ?')){localStorage.removeItem(STORAGE_KEY);render()}});
 
 $('sessionForm').addEventListener('submit',async event=>{
-  event.preventDefault();const endpoint=configuredEndpoint(),access=getAccess();if(endpoint&&!(await checkAccess(false))){toast('Ton accès n’est pas actif');render();return}
-  const form=new FormData(event.currentTarget),revenue=Number(form.get('revenue')),rate=endpoint?Number(access.rate):Number(form.get('rate'));
+  event.preventDefault();const formElement=event.currentTarget,endpoint=configuredEndpoint(),access=getAccess();if(endpoint&&!(await checkAccess(false))){toast('Ton accès n’est pas actif');render();return}
+  const form=new FormData(formElement),revenue=Number(form.get('revenue')),rate=endpoint?Number(access.rate):Number(form.get('rate'));
   const record={action:'session',id:makeId(),date:todayKey(),timestamp:new Date().toISOString(),token:access?.token||'',instructor:endpoint?access.name:String(form.get('instructor')).trim(),activity:String(form.get('activity')),participants:Number(form.get('participants')),duration:Number(form.get('duration')),revenue,rate,commission:Number((revenue*rate/100).toFixed(2))};
   const duplicate=allSessions().find(x=>x.date===record.date&&x.instructor===record.instructor&&x.activity===record.activity&&x.participants===record.participants&&x.duration===record.duration&&x.revenue===record.revenue&&x.rate===record.rate);
   if(duplicate&&!confirm('Une séance identique est déjà enregistrée aujourd’hui. Veux-tu vraiment l’envoyer une deuxième fois ?'))return;record.forceDuplicate=!!duplicate;
