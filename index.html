@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#073b4c">
+  <meta name="description" content="Saisie rapide et suivi des séances d'un club nautique.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <title>Horizon Nautique</title>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#saisie" aria-label="Horizon Nautique, accueil">
+      <span class="brand-mark">HN</span><span>Horizon Nautique</span>
+    </a>
+    <button class="connection" id="connectionButton" type="button"><span class="dot"></span><span id="connectionText">Mode essai</span></button>
+  </header>
+
+  <main>
+    <section class="intro">
+      <div>
+        <p class="eyebrow" id="today"></p>
+        <h1>Enregistrer une séance</h1>
+      </div>
+      <div class="daily-total"><span>CA du jour</span><strong id="headerRevenue">0 €</strong></div>
+    </section>
+
+    <nav class="tabs" aria-label="Navigation principale">
+      <button class="tab active" data-view="saisie" type="button">Nouvelle séance</button>
+      <button class="tab" data-view="journal" type="button">Journal <span class="badge" id="entryCount">0</span></button>
+    </nav>
+
+    <section class="view active" id="saisie">
+      <div class="card access-gate" id="accessGate" hidden>
+        <span class="gate-icon" id="gateIcon">⌛</span>
+        <div><p class="eyebrow">Accès au tableau</p><h2 id="gateTitle">Validation nécessaire</h2><p id="gateMessage">Ta demande doit être acceptée par le responsable.</p></div>
+        <button class="secondary" id="checkAccessButton" type="button">Vérifier mon accès</button>
+      </div>
+      <form id="sessionForm">
+        <div class="card form-card">
+          <div class="field full">
+            <label for="instructor">Moniteur</label>
+            <input id="instructor" name="instructor" autocomplete="name" placeholder="Ex. Paul" required>
+          </div>
+
+          <fieldset class="field full">
+            <legend>Activité</legend>
+            <div class="activity-grid">
+              <label class="activity"><input type="radio" name="activity" value="Kite" data-color="#ff6b35" checked><span class="activity-icon">K</span><span>Kite</span></label>
+              <label class="activity"><input type="radio" name="activity" value="Wingfoil" data-color="#118ab2"><span class="activity-icon">W</span><span>Wingfoil</span></label>
+              <label class="activity"><input type="radio" name="activity" value="Paddle" data-color="#06a77d"><span class="activity-icon">P</span><span>Paddle</span></label>
+              <label class="activity"><input type="radio" name="activity" value="Ski nautique" data-color="#7b61ff"><span class="activity-icon">S</span><span>Ski nautique</span></label>
+            </div>
+          </fieldset>
+
+          <div class="form-grid">
+            <div class="field"><label for="participants">Stagiaires</label><div class="stepper"><button type="button" data-step="-1" aria-label="Retirer un stagiaire">−</button><input id="participants" name="participants" type="number" min="1" value="1" inputmode="numeric" required><button type="button" data-step="1" aria-label="Ajouter un stagiaire">+</button></div></div>
+            <div class="field"><label for="duration">Durée</label><div class="input-unit"><input id="duration" name="duration" type="number" min="0.5" step="0.5" value="2" inputmode="decimal" required><span>h</span></div></div>
+            <div class="field"><label for="revenue">Montant encaissé</label><div class="input-unit"><input id="revenue" name="revenue" type="number" min="0" step="0.01" placeholder="0" inputmode="decimal" required><span>€</span></div></div>
+            <div class="field"><label for="rate">Part moniteur</label><div class="input-unit"><input id="rate" name="rate" type="number" min="0" max="100" value="30" inputmode="decimal" required><span>%</span></div></div>
+          </div>
+
+          <div class="calculation"><div><span>Rémunération calculée</span><small>Montant encaissé × pourcentage</small></div><strong id="commissionPreview">0,00 €</strong></div>
+        </div>
+        <button class="primary" type="submit"><span>Enregistrer la séance</span><span aria-hidden="true">→</span></button>
+      </form>
+    </section>
+
+    <section class="view" id="journal">
+      <div class="summary-grid">
+        <article class="metric"><span>Chiffre d’affaires</span><strong id="totalRevenue">0 €</strong></article>
+        <article class="metric"><span>Parts moniteurs</span><strong id="totalCommission">0 €</strong></article>
+        <article class="metric"><span>Stagiaires</span><strong id="totalParticipants">0</strong></article>
+      </div>
+      <div class="card journal-card">
+        <div class="journal-head"><div><p class="eyebrow">Aujourd’hui</p><h2>Séances enregistrées</h2></div><button class="text-button" id="clearButton" type="button">Effacer l’essai</button></div>
+        <div id="emptyState" class="empty"><span>≈</span><p>Aucune séance enregistrée aujourd’hui.</p></div>
+        <div id="entries" class="entries"></div>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="settingsDialog">
+    <form method="dialog" class="dialog-card">
+      <div class="dialog-head"><div><p class="eyebrow">Connexion</p><h2>Google Sheets</h2></div><button class="icon-button" value="cancel" aria-label="Fermer">×</button></div>
+      <p class="dialog-copy">Sans connexion, les séances restent sur cet appareil. Colle l’adresse du script Google pour envoyer aussi chaque séance dans le tableau partagé.</p>
+      <label class="field"><span>Adresse du script</span><input id="endpoint" type="url" placeholder="https://script.google.com/macros/s/…/exec"></label>
+      <div class="access-setup" id="accessSetup" hidden>
+        <p class="access-label">Première connexion du moniteur</p>
+        <label class="field"><span>Nom et prénom</span><input id="accessName" autocomplete="name" placeholder="Ex. Paul Martin"></label>
+        <label class="field"><span>Adresse e-mail</span><input id="accessEmail" type="email" autocomplete="email" placeholder="paul@exemple.fr"></label>
+        <button class="secondary wide" id="requestAccessButton" type="button">Demander l’accès</button>
+        <p class="access-status" id="accessStatus"></p>
+      </div>
+      <div class="dialog-actions"><button class="secondary" id="disconnectButton" type="button">Déconnecter</button><button class="primary compact" id="saveEndpoint" type="button">Enregistrer</button></div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
