@@ -51,22 +51,18 @@
               <label class="activity"><input type="radio" name="activity" value="Kite" data-color="#ff6b35" checked><span class="activity-icon">K</span><span>Kite</span></label>
               <label class="activity"><input type="radio" name="activity" value="Wingfoil" data-color="#118ab2"><span class="activity-icon">W</span><span>Wingfoil</span></label>
               <label class="activity"><input type="radio" name="activity" value="Paddle" data-color="#06a77d"><span class="activity-icon">P</span><span>Paddle</span></label>
-              <label class="activity"><input type="radio" name="activity" value="Ski nautique" data-color="#7b61ff"><span class="activity-icon">S</span><span>Ski nautique</span></label>
-              <label class="activity"><input type="radio" name="activity" value="Efoil" data-color="#00a6a6"><span class="activity-icon">E</span><span>Efoil</span></label>
-              <label class="activity"><input type="radio" name="activity" value="Pumpfoil" data-color="#4361ee"><span class="activity-icon">P</span><span>Pumpfoil</span></label>
-              <label class="activity"><input type="radio" name="activity" value="Fat bike" data-color="#8a5a44"><span class="activity-icon">F</span><span>Fat bike</span></label>
-              <label class="activity"><input type="radio" name="activity" value="Trottinette" data-color="#9b5de5"><span class="activity-icon">T</span><span>Trottinette</span></label>
-              <label class="activity"><input type="radio" name="activity" value="Groupe" data-color="#ef476f"><span class="activity-icon">G</span><span>Groupe</span></label>
+              <label class="activity"><input type="radio" name="activity" value="Wakeboard" data-color="#7b61ff"><span class="activity-icon">W</span><span>Wakeboard</span></label>
             </div>
           </fieldset>
 
           <div class="form-grid">
-            <div class="field"><label for="serviceType">Type de prestation</label><select id="serviceType" name="serviceType" required><option>Cours</option><option>Location</option><option>Navigation surveillée</option><option>Animation</option><option>Autre</option></select></div>
-            <div class="field"><label for="audience">Public</label><select id="audience" name="audience" required><option>Individuel</option><option>Séminaire</option><option>Groupe</option><option>Autre</option></select></div>
             <div class="field"><label for="participants">Stagiaires</label><div class="stepper"><button type="button" data-step="-1" aria-label="Retirer un stagiaire">−</button><input id="participants" name="participants" type="number" min="1" value="1" inputmode="numeric" required><button type="button" data-step="1" aria-label="Ajouter un stagiaire">+</button></div></div>
             <div class="field"><label for="duration">Durée</label><div class="input-unit"><input id="duration" name="duration" type="number" min="0.5" step="0.5" value="2" inputmode="decimal" required><span>h</span></div></div>
             <div class="field"><label for="revenue">Montant encaissé</label><div class="input-unit"><input id="revenue" name="revenue" type="number" min="0" step="0.01" placeholder="0" inputmode="decimal" required><span>€</span></div></div>
+            <div class="field"><label for="rate">Part moniteur</label><div class="input-unit"><input id="rate" name="rate" type="number" min="0" max="100" value="30" inputmode="decimal" required><span>%</span></div></div>
           </div>
+
+          <div class="calculation"><div><span>Rémunération calculée</span><small>Montant encaissé × pourcentage</small></div><strong id="commissionPreview">0,00 €</strong></div>
         </div>
         <button class="primary" type="submit"><span>Enregistrer la séance</span><span aria-hidden="true">→</span></button>
       </form>
@@ -75,6 +71,7 @@
     <section class="view" id="journal">
       <div class="summary-grid">
         <article class="metric"><span>Chiffre d’affaires</span><strong id="totalRevenue">0 €</strong></article>
+        <article class="metric"><span>Parts moniteurs</span><strong id="totalCommission">0 €</strong></article>
         <article class="metric"><span>Stagiaires</span><strong id="totalParticipants">0</strong></article>
       </div>
       <div class="card journal-card">
@@ -88,15 +85,16 @@
   <dialog id="settingsDialog">
     <form method="dialog" class="dialog-card">
       <div class="dialog-head"><div><p class="eyebrow">Connexion</p><h2>Google Sheets</h2></div><button class="icon-button" value="cancel" aria-label="Fermer">×</button></div>
-      <p class="dialog-copy">L’application est reliée au tableau Evolution2 Lacanau. Chaque moniteur doit demander un accès personnel avant son premier envoi.</p>
-      <div class="access-setup" id="accessSetup">
+      <p class="dialog-copy">Sans connexion, les séances restent sur cet appareil. Colle l’adresse du script Google pour envoyer aussi chaque séance dans le tableau partagé.</p>
+      <label class="field"><span>Adresse du script</span><input id="endpoint" type="url" placeholder="https://script.google.com/macros/s/…/exec"></label>
+      <div class="access-setup" id="accessSetup" hidden>
         <p class="access-label">Première connexion du moniteur</p>
         <label class="field"><span>Nom et prénom</span><input id="accessName" autocomplete="name" placeholder="Ex. Paul Martin"></label>
         <label class="field"><span>Adresse e-mail</span><input id="accessEmail" type="email" autocomplete="email" placeholder="paul@exemple.fr"></label>
         <button class="secondary wide" id="requestAccessButton" type="button">Demander l’accès</button>
         <p class="access-status" id="accessStatus"></p>
       </div>
-      <div class="dialog-actions"><button class="secondary wide" id="disconnectButton" type="button">Réinitialiser mon accès</button></div>
+      <div class="dialog-actions"><button class="secondary" id="disconnectButton" type="button">Déconnecter</button><button class="primary compact" id="saveEndpoint" type="button">Enregistrer</button></div>
     </form>
   </dialog>
 
