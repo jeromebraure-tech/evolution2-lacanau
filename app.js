@@ -18,11 +18,12 @@ $('instructor').value=localStorage.getItem(INSTRUCTOR_KEY)||'';
 
 function escapeHtml(value){const d=document.createElement('div');d.textContent=value;return d.innerHTML}
 function toast(message){$('toast').textContent=message;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2800)}
+function updateMonitorCountField(){const shared=$('serviceType').value==='Navigation surveillée';$('monitorCountField').hidden=!shared;if(!shared)$('monitorCount').value='1'}
 
 function render(){
   const items=todaySessions(),revenue=items.reduce((s,x)=>s+(Number(x.revenue)||0),0),participants=items.reduce((s,x)=>s+(Number(x.participants)||0),0);
   $('headerRevenue').textContent=euro.format(revenue);$('totalRevenue').textContent=euro.format(revenue);$('totalParticipants').textContent=participants;$('entryCount').textContent=items.length;$('emptyState').hidden=items.length>0;
-  $('entries').innerHTML=items.slice().reverse().map(item=>`<article class="entry"><div class="entry-main"><span class="entry-icon" style="background:${colors[item.activity]||'#007f78'}">${escapeHtml(item.activity?.[0]||'?')}</span><div><h3>${escapeHtml(item.activity)} · ${escapeHtml(item.instructor)}</h3><p>${escapeHtml(item.serviceType||'Cours')} · ${escapeHtml(item.audience||'Individuel')} · ${item.participants} participant${item.participants>1?'s':''} · ${item.duration} h</p></div></div><div class="entry-amount"><strong>${euro.format(item.revenue)}</strong></div></article>`).join('');
+  $('entries').innerHTML=items.slice().reverse().map(item=>`<article class="entry"><div class="entry-main"><span class="entry-icon" style="background:${colors[item.activity]||'#007f78'}">${escapeHtml(item.activity?.[0]||'?')}</span><div><h3>${escapeHtml(item.activity)} · ${escapeHtml(item.instructor)}</h3><p>${escapeHtml(item.serviceType||'Cours')} · ${escapeHtml(item.audience||'Individuel')} · ${item.participants} participant${item.participants>1?'s':''} · ${item.duration} h${Number(item.monitorCount)>1?' · '+item.monitorCount+' moniteurs':''}</p></div></div><div class="entry-amount"><strong>${euro.format(item.revenue)}</strong></div></article>`).join('');
   const endpoint=configuredEndpoint(),access=getAccess();
   $('connectionButton').classList.toggle('connected',!!endpoint&&access?.status==='ACTIF');
   $('connectionText').textContent=!endpoint?'Configuration indisponible':access?.status==='ACTIF'?'Accès actif':access?.status==='INACTIF'?'Accès désactivé':'Validation en attente';
@@ -42,6 +43,7 @@ async function checkAccess(showMessage=true){
 
 document.querySelectorAll('.tab').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('.tab,.view').forEach(el=>el.classList.remove('active'));button.classList.add('active');$(button.dataset.view).classList.add('active')}));
 document.querySelectorAll('[data-step]').forEach(button=>button.addEventListener('click',()=>{$('participants').value=Math.max(1,(Number($('participants').value)||1)+Number(button.dataset.step))}));
+$('serviceType').addEventListener('change',updateMonitorCountField);
 $('connectionButton').addEventListener('click',()=>$('settingsDialog').showModal());
 $('checkAccessButton').addEventListener('click',()=>checkAccess());
 $('disconnectButton').addEventListener('click',()=>{localStorage.removeItem(ACCESS_KEY);$('instructor').readOnly=false;$('settingsDialog').close();render();toast('Accès réinitialisé sur cet appareil')});
@@ -50,10 +52,10 @@ $('clearButton').addEventListener('click',()=>{if(confirm('Effacer les séances 
 
 $('sessionForm').addEventListener('submit',async event=>{
   event.preventDefault();const formElement=event.currentTarget,endpoint=configuredEndpoint();if(!endpoint||!(await checkAccess(false))){toast('Ton accès n’est pas actif');render();return}
-  const access=getAccess(),form=new FormData(formElement),record={action:'session',id:makeId(),date:todayKey(),timestamp:new Date().toISOString(),token:access.token,instructor:access.name,activity:String(form.get('activity')),serviceType:String(form.get('serviceType')),audience:String(form.get('audience')),participants:Number(form.get('participants')),duration:Number(form.get('duration')),revenue:Number(form.get('revenue'))};
-  const duplicate=allSessions().find(x=>x.date===record.date&&x.instructor===record.instructor&&x.activity===record.activity&&(x.serviceType||'Cours')===record.serviceType&&(x.audience||'Individuel')===record.audience&&x.participants===record.participants&&x.duration===record.duration&&x.revenue===record.revenue);
+  const access=getAccess(),form=new FormData(formElement),serviceType=String(form.get('serviceType')),record={action:'session',id:makeId(),date:todayKey(),timestamp:new Date().toISOString(),token:access.token,instructor:access.name,activity:String(form.get('activity')),serviceType,audience:String(form.get('audience')),participants:Number(form.get('participants')),duration:Number(form.get('duration')),revenue:Number(form.get('revenue')),monitorCount:serviceType==='Navigation surveillée'?Number(form.get('monitorCount'))||1:1};
+  const duplicate=allSessions().find(x=>x.date===record.date&&x.instructor===record.instructor&&x.activity===record.activity&&(x.serviceType||'Cours')===record.serviceType&&(x.audience||'Individuel')===record.audience&&x.participants===record.participants&&x.duration===record.duration&&x.revenue===record.revenue&&(Number(x.monitorCount)||1)===record.monitorCount);
   if(duplicate&&!confirm('Une séance identique est déjà enregistrée aujourd’hui. Veux-tu vraiment l’envoyer une deuxième fois ?'))return;record.forceDuplicate=!!duplicate;
   try{await fetch(endpoint,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(record)});toast('Séance envoyée au tableau partagé')}catch(error){toast('Envoi impossible : la séance n’a pas été validée');return}
   localStorage.setItem(INSTRUCTOR_KEY,record.instructor);const sessions=allSessions();sessions.push(record);localStorage.setItem(STORAGE_KEY,JSON.stringify(sessions));$('revenue').value='';render();
 });
-render();if(configuredEndpoint()&&getAccess()?.token)checkAccess(false);if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');
+render();updateMonitorCountField();if(configuredEndpoint()&&getAccess()?.token)checkAccess(false);if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');

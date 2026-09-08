@@ -61,8 +61,9 @@
           </fieldset>
 
           <div class="form-grid">
-            <div class="field"><label for="serviceType">Type de prestation</label><select id="serviceType" name="serviceType" required><option>Cours</option><option>Location</option><option>Navigation surveillée</option><option>Animation</option><option>Autre</option></select></div>
-            <div class="field"><label for="audience">Public</label><select id="audience" name="audience" required><option>Individuel</option><option>Séminaire</option><option>Groupe</option><option>Autre</option></select></div>
+            <div class="field"><label for="serviceType">Type de prestation</label><select id="serviceType" name="serviceType" required><option>Cours</option><option>Navigation surveillée</option><option>Animation</option><option>Location</option><option>Randonnée</option><option>Autre</option></select></div>
+            <div class="field"><label for="audience">Public</label><select id="audience" name="audience" required><option>Individuel</option><option>UCPA stage wake</option><option>Séminaire</option><option>EVG / EVJF</option><option>Dassault</option></select></div>
+            <div class="field" id="monitorCountField" hidden><label for="monitorCount">Moniteurs sur la navigation</label><select id="monitorCount" name="monitorCount"><option value="1">1 moniteur</option><option value="2">2 moniteurs</option></select></div>
             <div class="field"><label for="participants">Stagiaires</label><div class="stepper"><button type="button" data-step="-1" aria-label="Retirer un stagiaire">−</button><input id="participants" name="participants" type="number" min="1" value="1" inputmode="numeric" required><button type="button" data-step="1" aria-label="Ajouter un stagiaire">+</button></div></div>
             <div class="field"><label for="duration">Durée</label><div class="input-unit"><input id="duration" name="duration" type="number" min="0.5" step="0.5" value="2" inputmode="decimal" required><span>h</span></div></div>
             <div class="field"><label for="revenue">Montant encaissé</label><div class="input-unit"><input id="revenue" name="revenue" type="number" min="0" step="0.01" placeholder="0" inputmode="decimal" required><span>€</span></div></div>
