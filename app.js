@@ -46,9 +46,13 @@ function renderChips(containerId,name,values,current){
   $(containerId).innerHTML=values.map((value,index)=>`<label class="choice-chip"><input type="radio" name="${name}" value="${escapeHtml(value)}" ${value===(current||values[0])||(!current&&index===0)?'checked':''}><span>${escapeHtml(value)}</span></label>`).join('');
   document.querySelectorAll(`input[name="${name}"]`).forEach(input=>input.addEventListener('change',()=>{amountWasSuggested=false;selectedQuickRate=null;updateDetails()}));
 }
+function countValues(countType,count,efoilFormat=1){
+  const entered=Math.max(1,Number(count)||1),format=Math.max(1,Number(efoilFormat)||1);
+  return{participants:countType==='efoil'?format:entered,quantity:['efoil','runs','sessions'].includes(countType)?entered:1};
+}
 function state(){
   const activity=selected('activity'),item=catalog[activity],service=selected('serviceType'),audience=selected('audience');
-  const count=Math.max(1,Number($('count').value)||1),isEfoil=item.count==='efoil',participants=isEfoil?Number($('efoilFormat').value):item.count==='people'?count:1,quantity=['efoil','runs','sessions'].includes(item.count)?count:1;
+  const count=Math.max(1,Number($('count').value)||1),values=countValues(item.count,count,$('efoilFormat').value),participants=values.participants,quantity=values.quantity;
   return{activity,item,service,audience,count,participants,quantity};
 }
 function renderConditionalForm(){
